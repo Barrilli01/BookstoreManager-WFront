@@ -2,6 +2,7 @@ package com.gabrielbarrilli.BookstoreManagerWithFront.controller;
 
 import com.gabrielbarrilli.BookstoreManagerWithFront.model.Book;
 import com.gabrielbarrilli.BookstoreManagerWithFront.repository.BookRepository;
+import com.gabrielbarrilli.BookstoreManagerWithFront.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,35 +20,20 @@ public class BookController {
     @Autowired
     BookRepository bookRepository;
 
+    private final BookService bookService;
+
+    public BookController(BookService bookService) {
+        this.bookService = bookService;
+    }
+
     @GetMapping("/books")
     public ResponseEntity<List<Book>> getAllBooks(@RequestParam(required = false) String bookName) {
-        try {
-            List<Book> books = new ArrayList<Book>();
-
-            if (bookName == null)
-                bookRepository.findAll().forEach(books::add);
-            else
-                bookRepository.findByBookNameContaining(bookName).forEach(books::add);
-
-            if (books.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(books, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+      return bookService.getAllBooks(bookName);
     }
 
     @GetMapping("/books/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable("id") Long id) {
-        Optional<Book> bookData = bookRepository.findById(id);
-
-        if (bookData.isPresent()) {
-            return new ResponseEntity<>(bookData.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+       return bookService.getBookById(id);
     }
 
     @PostMapping("/books")
